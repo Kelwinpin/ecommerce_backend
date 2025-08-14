@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  username         String?
+  password         String?
+  email            String?            @unique
+  phone            String?
+  createdAt        DateTime?          @default(now()) @map("created_at")
+  updatedAt        DateTime?          @updatedAt @map("updated_at")
+  deletedAt        DateTime?          @map("deleted_at")
+  emailValidations EmailValidation[]
+  addresses        Address[]
+  carts            Cart[]
+  orders           Order[]
+  stockMovements   StockMovement[]
+  couponUsages     CouponUsage[]
+  reviews          Review[]
+  wishlists        Wishlist[]
+
+  @@map("users")
+}
+
+model EmailValidation {
+  email  String?
+  userId Int     @map("user_id")
+  code   BigInt?
+  user   User    @relation(fields: [userId], references: [id])
+
+  @@id([userId])
+  @@map("email_validation")
+}
+
+model DomAddress {
+  id          Int       @id @default(autoincrement())
+  description String?
+  addresses   Address[]
+
+  @@map("DOM_addresses")
+}
+
+model Address {
+  id             Int         @id @default(autoincrement())
+  userId         Int         @map("user_id")
+  postalCode     String?     @map("postal_code")
+  typeId         Int         @map("type_id")
+  addressLineOne String?     @map("address_line_one")
+  addressLineTwo String?     @map("address_line_two")
+  isDefault      Boolean?    @map("is_default")
+  city           String?
+  state          String?
+  createdAt      DateTime?   @default(now()) @map("created_at")
+  updatedAt      DateTime?   @updatedAt @map("updated_at")
+  deletedAt      DateTime?   @map("deleted_at")
+  user           User        @relation(fields: [userId], references: [id])
+  type           DomAddress  @relation(fields: [typeId], references: [id])
+  orders         Order[]
+
+  @@map("addresses")
+}
+
+model DomMetaKeyword {
+  id           Int           @id @default(autoincrement())
+  keyword      String?
+  metaKeywords MetaKeyword[]
+
+  @@map("DOM_meta_keywords")
+}
+
+model MetaKeyword {
+  productId Int            @map("product_id")
+  keywordId Int            @map("keyword_id")
+  product   Product        @relation(fields: [productId], references: [id])
+  keyword   DomMetaKeyword @relation(fields: [keywordId], references: [id])
+
+  @@id([productId, keywordId])
+  @@map("meta_keyword")
+}
+
+model Product {
+  id                Int             @id @default(autoincrement())
+  name              String
+  sku               String?
+  description       String?
+  shortDescription  String?         @map("short_description")
+  price             Decimal         @db.Decimal(19, 2)
+  compareAtPrice    Decimal?        @map("compare_at_price") @db.Decimal(19, 2)
+  brandId           Int?            @map("brand_id")
+  isActive          Boolean?        @map("is_active")
+  isFeatured        Boolean?        @map("is_featured")
+  stockQuantity     Int?            @map("stock_quantity")
+  lowStockThreshold Int?            @map("low_stock_threshold")
+  metaTitle         String?         @map("meta_title")
+  metaDescription   String?         @map("meta_description")
+  images            ProductImage[]
+  metaKeywords      MetaKeyword[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+  stockMovements    StockMovement[]
+  categories        Category[]
+  reviews           Review[]
+  wishlists         Wishlist[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int?     @map("product_id")
+  imageUrl  String?  @map("image_url")
+  altText   String?  @map("alt_text")
+  isPrimary Boolean? @map("is_primary")
+  sortOrder Int?     @map("sort_order")
+  product   Product? @relation(fields: [productId], references: [id])
+
+  @@map("products_images")
+}
+
+model DomStatusCart {
+  id          Int     @id @default(autoincrement())
+  description String?
+  carts       Cart[]
+
+  @@map("DOM_status_carts")
+}
+
+model Cart {
+  id        Int            @id @default(autoincrement())
+  userId    Int?           @map("user_id")
+  sessionId Int?           @map("session_id")
+  statusId  Int?           @map("status")
+  expiresAt DateTime?      @map("expires_at")
+  createdAt DateTime?      @default(now()) @map("created_at")
+  updatedAt DateTime?      @updatedAt @map("updated_at")
+  deletedAt DateTime?      @map("deleted_at")
+  user      User?          @relation(fields: [userId], references: [id])
+  status    DomStatusCart? @relation(fields: [statusId], references: [id])
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        Int       @id @default(autoincrement())
+  cartId    Int?      @map("cart_id")
+  productId Int?      @map("product_id")
+  quantity  Int?
+  price     Decimal?  @db.Decimal(19, 2)
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  cart      Cart?     @relation(fields: [cartId], references: [id])
+  product   Product?  @relation(fields: [productId], references: [id])
+
+  @@map("cart_items")
+}
+
+model DomOrderStatus {
+  id          Int     @id @default(autoincrement())
+  description String?
+  orders      Order[]
+
+  @@map("DOM_order_status")
+}
+
+model Order {
+  id                Int             @id @default(autoincrement())
+  orderNumber       String?         @map("order_number")
+  userId            Int?            @map("user_id")
+  statusId          Int?            @map("status")
+  shippingCost      Decimal?        @map("shipping_cost") @db.Decimal(19, 2)
+  discountAmount    Decimal?        @map("discount_amount") @db.Decimal(19, 2)
+  subtotal          Decimal?        @db.Decimal(19, 2)
+  notes             String?
+  shippingAddressId Int?            @map("shipping_address_id")
+  deliveredAt       DateTime?       @map("delivered_at")
+  createdAt         DateTime?       @default(now()) @map("created_at")
+  updatedAt         DateTime?       @updatedAt @map("updated_at")
+  deletedAt         DateTime?       @map("deleted_at")
+  user              User?           @relation(fields: [userId], references: [id])
+  status            DomOrderStatus? @relation(fields: [statusId], references: [id])
+  shippingAddress   Address?        @relation(fields: [shippingAddressId], references: [id])
+  items             OrderItem[]
+  payments          Payment[]
+  couponUsages      CouponUsage[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id             Int       @id @default(autoincrement())
+  orderId        Int?      @map("order_id")
+  productId      Int?      @map("product_id")
+  quantity       Int?
+  price          Decimal?  @db.Decimal(19, 2)
+  discountAmount Decimal?  @map("discount_amount") @db.Decimal(19, 2)
+  createdAt      DateTime? @default(now()) @map("created_at")
+  updatedAt      DateTime? @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  order          Order?    @relation(fields: [orderId], references: [id])
+  product        Product?  @relation(fields: [productId], references: [id])
+  reviews        Review[]
+
+  @@map("order_items")
+}
+
+model DomStockMovementsType {
+  id             Int             @id @default(autoincrement())
+  description    String?
+  stockMovements StockMovement[]
+
+  @@map("DOM_stock_movements_types")
+}
+
+model StockMovement {
+  id        Int                    @id @default(autoincrement())
+  productId Int?                   @map("product_id")
+  quantity  Int?
+  typeId    Int?                   @map("type")
+  userId    Int?                   @map("user_id")
+  createdAt DateTime?              @default(now()) @map("created_at")
+  updatedAt DateTime?              @updatedAt @map("updated_at")
+  deletedAt DateTime?              @map("deleted_at")
+  product   Product?               @relation(fields: [productId], references: [id])
+  user      User?                  @relation(fields: [userId], references: [id])
+  type      DomStockMovementsType? @relation(fields: [typeId], references: [id])
+
+  @@map("stock_movements")
+}
+
+model DomCategory {
+  id         Int        @id @default(autoincrement())
+  description String?
+  categories Category[]
+
+  @@map("DOM_categories")
+}
+
+model Category {
+  categoryId Int         @map("category_id")
+  productId  Int         @map("product_id")
+  category   DomCategory @relation(fields: [categoryId], references: [id])
+  product    Product     @relation(fields: [productId], references: [id])
+
+  @@id([categoryId, productId])
+  @@map("categories")
+}
+
+model DomPaymentMethod {
+  id          Int       @id @default(autoincrement())
+  description String?
+  payments    Payment[]
+
+  @@map("DOM_payment_methods")
+}
+
+model DomGateway {
+  id          Int       @id @default(autoincrement())
+  description String?
+  payments    Payment[]
+
+  @@map("DOM_gateways")
+}
+
+model Payment {
+  id              Int               @id @default(autoincrement())
+  orderId         Int?              @map("order_id")
+  transactionId   String?           @map("transaction_id")
+  paymentMethodId Int?              @map("payment_method")
+  status          Int?
+  amount          Decimal?          @db.Decimal(19, 2)
+  gatewayId       Int?              @map("gateway")
+  gatewayResponse Json?             @map("gateway_response")
+  paidAt          DateTime?         @map("paid_at")
+  failedAt        DateTime?         @map("failed_at")
+  refundedAt      DateTime?         @map("refunded_at")
+  createdAt       DateTime?         @default(now()) @map("created_at")
+  updatedAt       DateTime?         @updatedAt @map("updated_at")
+  deletedAt       DateTime?         @map("deleted_at")
+  order           Order?            @relation(fields: [orderId], references: [id])
+  paymentMethod   DomPaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  gateway         DomGateway?       @relation(fields: [gatewayId], references: [id])
+
+  @@map("payments")
+}
+
+model DomDiscountType {
+  id          Int      @id @default(autoincrement())
+  description String?
+  coupons     Coupon[]
+
+  @@map("DOM_discount_type")
+}
+
+model Coupon {
+  id              Int              @id @default(autoincrement())
+  code            String?          @unique
+  description     String?
+  discountValue   Decimal?         @map("discount_value") @db.Decimal(19, 2)
+  discountTypeId  Int?             @map("discount_type")
+  minimumPurchase Decimal?         @map("minimum_purchase") @db.Decimal(19, 2)
+  usageLimit      Decimal?         @map("usage_limit") @db.Decimal(19, 2)
+  usageCount      Int?             @map("usage_count")
+  isActive        Boolean?         @map("is_active")
+  validFrom       DateTime?        @map("valid_from")
+  validUntil      DateTime?        @map("valid_until")
+  createdAt       DateTime?        @default(now()) @map("created_at")
+  updatedAt       DateTime?        @updatedAt @map("updated_at")
+  deletedAt       DateTime?        @map("deleted_at")
+  discountType    DomDiscountType? @relation(fields: [discountTypeId], references: [id])
+  usages          CouponUsage[]
+
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id             Int      @id @default(autoincrement())
+  couponId       Int?     @map("coupon_id")
+  orderId        Int?     @map("order_id")
+  userId         Int?     @map("user_id")
+  discountAmount Decimal? @map("discount_amount") @db.Decimal(19, 2)
+  coupon         Coupon?  @relation(fields: [couponId], references: [id])
+  order          Order?   @relation(fields: [orderId], references: [id])
+  user           User?    @relation(fields: [userId], references: [id])
+
+  @@map("coupon_usage")
+}
+
+model Review {
+  id                  Int        @id @default(autoincrement())
+  productId           Int?       @map("product_id")
+  userId              Int?       @map("user_id")
+  orderItemId         Int?       @map("order_item_id")
+  rating              Int?
+  title               String?
+  comment             String?
+  isVerifiedPurchase  Boolean?   @map("is_verified_purchase")
+  isApproved          Boolean?   @map("is_approved")
+  helpfulCount        Int?       @map("helpful_count")
+  product             Product?   @relation(fields: [productId], references: [id])
+  user                User?      @relation(fields: [userId], references: [id])
+  orderItem           OrderItem? @relation(fields: [orderItemId], references: [id])
+
+  @@map("reviews")
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  productId Int?     @map("product_id")
+  user      User?    @relation(fields: [userId], references: [id])
+  product   Product? @relation(fields: [productId], references: [id])
+
+  @@map("wishlists")
+}
+
+model NewsletterSubscriber {
+  id             Int       @id @default(autoincrement())
+  email          String?
+  isActive       Boolean?  @map("is_active")
+  subscribedAt   DateTime? @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+
+  @@map("newsletter_subscribers")
+}
