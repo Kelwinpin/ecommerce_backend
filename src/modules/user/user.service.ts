@@ -1,26 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Users } from '@prisma/client';
+import { UserRepository } from './user.repository';
+import { BaseService } from 'src/common/services/base.service';
 
 @Injectable()
-export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
-
-  findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+export class UserService extends BaseService<Users> {
+    protected entityName = 'user';
+    constructor(protected readonly repository: UserRepository) {
+        super(repository);
+    }
 }
