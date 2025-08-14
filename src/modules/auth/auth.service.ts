@@ -30,9 +30,13 @@ export class AuthService {
             throw new ConflictException('Email já cadastrado');
         }
 
+        if (await this.prisma.users.findUnique({ where: { cpf: dto.cpf } })) {
+            throw new ConflictException('CPF já cadastrado');
+        }
+
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const user = await this.prisma.users.create({
-            data: { email: dto.email, password: hashedPassword, username: dto.username as string },
+            data: { email: dto.email, password: hashedPassword, username: dto.username as string, cpf: dto.cpf as string },
         });
 
         return this.signToken(user);
@@ -57,6 +61,7 @@ export class AuthService {
             email: user.email,
             username: user.username,
             phone: user.phone,
+            cpf: user.cpf,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
             deletedAt: user.deletedAt,
