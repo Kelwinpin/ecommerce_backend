@@ -52,7 +52,16 @@ export class AuthService {
     }
 
     async signToken(user: Users) {
-        const payload = { ...user };
+        const payload = {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            phone: user.phone,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            deletedAt: user.deletedAt,
+        };
+
         return {
             access_token: await this.jwt.signAsync(payload),
         };
