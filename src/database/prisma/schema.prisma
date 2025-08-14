@@ -8,15 +8,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id               Int                @id @default(autoincrement())
+model Users {
+  id               Int               @id @default(autoincrement())
   username         String?
   password         String?
-  email            String?            @unique
+  email            String?           @unique
   phone            String?
-  createdAt        DateTime?          @default(now()) @map("created_at")
-  updatedAt        DateTime?          @updatedAt @map("updated_at")
-  deletedAt        DateTime?          @map("deleted_at")
+  createdAt        DateTime?         @default(now()) @map("created_at")
+  updatedAt        DateTime?         @updatedAt @map("updated_at")
+  deletedAt        DateTime?         @map("deleted_at")
   emailValidations EmailValidation[]
   addresses        Address[]
   carts            Cart[]
@@ -33,7 +33,7 @@ model EmailValidation {
   email  String?
   userId Int     @map("user_id")
   code   BigInt?
-  user   User    @relation(fields: [userId], references: [id])
+  user   Users   @relation(fields: [userId], references: [id])
 
   @@id([userId])
   @@map("email_validation")
@@ -48,20 +48,20 @@ model DomAddress {
 }
 
 model Address {
-  id             Int         @id @default(autoincrement())
-  userId         Int         @map("user_id")
-  postalCode     String?     @map("postal_code")
-  typeId         Int         @map("type_id")
-  addressLineOne String?     @map("address_line_one")
-  addressLineTwo String?     @map("address_line_two")
-  isDefault      Boolean?    @map("is_default")
+  id             Int        @id @default(autoincrement())
+  userId         Int        @map("user_id")
+  postalCode     String?    @map("postal_code")
+  typeId         Int        @map("type_id")
+  addressLineOne String?    @map("address_line_one")
+  addressLineTwo String?    @map("address_line_two")
+  isDefault      Boolean?   @map("is_default")
   city           String?
   state          String?
-  createdAt      DateTime?   @default(now()) @map("created_at")
-  updatedAt      DateTime?   @updatedAt @map("updated_at")
-  deletedAt      DateTime?   @map("deleted_at")
-  user           User        @relation(fields: [userId], references: [id])
-  type           DomAddress  @relation(fields: [typeId], references: [id])
+  createdAt      DateTime?  @default(now()) @map("created_at")
+  updatedAt      DateTime?  @updatedAt @map("updated_at")
+  deletedAt      DateTime?  @map("deleted_at")
+  user           Users      @relation(fields: [userId], references: [id])
+  type           DomAddress @relation(fields: [typeId], references: [id])
   orders         Order[]
 
   @@map("addresses")
@@ -141,7 +141,7 @@ model Cart {
   createdAt DateTime?      @default(now()) @map("created_at")
   updatedAt DateTime?      @updatedAt @map("updated_at")
   deletedAt DateTime?      @map("deleted_at")
-  user      User?          @relation(fields: [userId], references: [id])
+  user      Users?         @relation(fields: [userId], references: [id])
   status    DomStatusCart? @relation(fields: [statusId], references: [id])
   items     CartItem[]
 
@@ -185,7 +185,7 @@ model Order {
   createdAt         DateTime?       @default(now()) @map("created_at")
   updatedAt         DateTime?       @updatedAt @map("updated_at")
   deletedAt         DateTime?       @map("deleted_at")
-  user              User?           @relation(fields: [userId], references: [id])
+  user              Users?          @relation(fields: [userId], references: [id])
   status            DomOrderStatus? @relation(fields: [statusId], references: [id])
   shippingAddress   Address?        @relation(fields: [shippingAddressId], references: [id])
   items             OrderItem[]
@@ -230,16 +230,16 @@ model StockMovement {
   updatedAt DateTime?              @updatedAt @map("updated_at")
   deletedAt DateTime?              @map("deleted_at")
   product   Product?               @relation(fields: [productId], references: [id])
-  user      User?                  @relation(fields: [userId], references: [id])
+  user      Users?                 @relation(fields: [userId], references: [id])
   type      DomStockMovementsType? @relation(fields: [typeId], references: [id])
 
   @@map("stock_movements")
 }
 
 model DomCategory {
-  id         Int        @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   description String?
-  categories Category[]
+  categories  Category[]
 
   @@map("DOM_categories")
 }
@@ -329,25 +329,25 @@ model CouponUsage {
   discountAmount Decimal? @map("discount_amount") @db.Decimal(19, 2)
   coupon         Coupon?  @relation(fields: [couponId], references: [id])
   order          Order?   @relation(fields: [orderId], references: [id])
-  user           User?    @relation(fields: [userId], references: [id])
+  user           Users?   @relation(fields: [userId], references: [id])
 
   @@map("coupon_usage")
 }
 
 model Review {
-  id                  Int        @id @default(autoincrement())
-  productId           Int?       @map("product_id")
-  userId              Int?       @map("user_id")
-  orderItemId         Int?       @map("order_item_id")
-  rating              Int?
-  title               String?
-  comment             String?
-  isVerifiedPurchase  Boolean?   @map("is_verified_purchase")
-  isApproved          Boolean?   @map("is_approved")
-  helpfulCount        Int?       @map("helpful_count")
-  product             Product?   @relation(fields: [productId], references: [id])
-  user                User?      @relation(fields: [userId], references: [id])
-  orderItem           OrderItem? @relation(fields: [orderItemId], references: [id])
+  id                 Int        @id @default(autoincrement())
+  productId          Int?       @map("product_id")
+  userId             Int?       @map("user_id")
+  orderItemId        Int?       @map("order_item_id")
+  rating             Int?
+  title              String?
+  comment            String?
+  isVerifiedPurchase Boolean?   @map("is_verified_purchase")
+  isApproved         Boolean?   @map("is_approved")
+  helpfulCount       Int?       @map("helpful_count")
+  product            Product?   @relation(fields: [productId], references: [id])
+  user               Users?     @relation(fields: [userId], references: [id])
+  orderItem          OrderItem? @relation(fields: [orderItemId], references: [id])
 
   @@map("reviews")
 }
@@ -356,7 +356,7 @@ model Wishlist {
   id        Int      @id @default(autoincrement())
   userId    Int?     @map("user_id")
   productId Int?     @map("product_id")
-  user      User?    @relation(fields: [userId], references: [id])
+  user      Users?   @relation(fields: [userId], references: [id])
   product   Product? @relation(fields: [productId], references: [id])
 
   @@map("wishlists")
