@@ -1,99 +1,592 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🛒 E-commerce API - Documentação do Projeto
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> Sistema de e-commerce completo desenvolvido em NestJS com Prisma ORM
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Índice
 
-## Description
+1. [Visão Geral](#-visão-geral)
+2. [Tecnologias Utilizadas](#-tecnologias-utilizadas)
+3. [Pré-requisitos](#-pré-requisitos)
+4. [Instalação e Configuração](#-instalação-e-configuração)
+5. [Estrutura do Projeto](#-estrutura-do-projeto)
+6. [Módulos da Aplicação](#-módulos-da-aplicação)
+7. [Banco de Dados](#-banco-de-dados)
+8. [Autenticação e Autorização](#-autenticação-e-autorização)
+9. [API Endpoints](#-api-endpoints)
+10. [Testes](#-testes)
+11. [Deploy](#-deploy)
+12. [Contribuição](#-contribuição)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🎯 Visão Geral
 
-## Project setup
+Este projeto é uma API REST completa para e-commerce que oferece:
+
+- ✅ **Gestão de usuários** com autenticação JWT
+- ✅ **Catálogo de produtos** com categorias e imagens
+- ✅ **Sistema de carrinho** de compras
+- ✅ **Processamento de pedidos** e pagamentos
+- ✅ **Sistema de avaliações** e reviews
+- ✅ **Cupons de desconto** e promoções
+- ✅ **Lista de desejos** (wishlist)
+- ✅ **Newsletter** e notificações
+- ✅ **Gestão de estoque** com movimentações
+- ✅ **Cache Redis** para performance
+- ✅ **Rate limiting** e segurança
+- ✅ **Documentação automática** com Swagger
+
+## 🚀 Tecnologias Utilizadas
+
+### Backend
+- **[NestJS](https://nestjs.com/)** - Framework Node.js progressivo
+- **[Prisma](https://prisma.io/)** - ORM moderno para TypeScript
+- **[PostgreSQL](https://postgresql.org/)** - Banco de dados relacional
+- **[Redis](https://redis.io/)** - Cache em memória
+- **[JWT](https://jwt.io/)** - Autenticação stateless
+
+### Ferramentas de Desenvolvimento
+- **TypeScript** - Linguagem tipada
+- **Jest** - Framework de testes
+- **ESLint** - Linter de código
+- **Prettier** - Formatador de código
+- **Husky** - Git hooks
+- **Docker** - Containerização
+
+### Bibliotecas Principais
+- `@nestjs/passport` - Autenticação
+- `@nestjs/jwt` - Tokens JWT
+- `@nestjs/config` - Configurações
+- `@nestjs/cache-manager` - Sistema de cache
+- `@nestjs/bull` - Filas de processamento
+- `class-validator` - Validação de dados
+- `bcrypt` - Hash de senhas
+
+## 📋 Pré-requisitos
+
+Antes de começar, certifique-se de ter instalado:
+
+- **Node.js** (versão 18 ou superior)
+- **npm** ou **yarn**
+- **PostgreSQL** (versão 13 ou superior)
+- **Redis** (versão 6 ou superior)
+- **Git**
+
+## ⚙️ Instalação e Configuração
+
+### 1. Clone o repositório
 
 ```bash
-$ yarn install
+git clone https://github.com/seu-usuario/ecommerce-api.git
+cd ecommerce-api
 ```
 
-## Compile and run the project
+### 2. Instale as dependências
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+npm install
+# ou
+yarn install
 ```
 
-## Run tests
+### 3. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+# Database
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/ecommerce"
+
+# JWT
+JWT_SECRET="seu-jwt-secret-super-seguro"
+JWT_EXPIRES_IN="24h"
+
+# Redis
+REDIS_HOST="localhost"
+REDIS_PORT=6379
+REDIS_PASSWORD=""
+
+# App
+PORT=3000
+NODE_ENV="development"
+
+# Email (opcional)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="seu-email@gmail.com"
+SMTP_PASS="sua-senha-de-app"
+
+# Upload de arquivos
+MAX_FILE_SIZE=5242880  # 5MB
+UPLOAD_PATH="./uploads"
+
+# Paginação
+DEFAULT_PAGE_SIZE=20
+MAX_PAGE_SIZE=100
+
+# Rate Limiting
+THROTTLE_TTL=60000  # 1 minuto
+THROTTLE_LIMIT=100  # 100 requests por minuto
+```
+
+### 4. Configure o banco de dados
 
 ```bash
-# unit tests
-$ yarn run test
+# Gere o cliente Prisma
+npx prisma generate
 
-# e2e tests
-$ yarn run test:e2e
+# Execute as migrations
+npx prisma migrate deploy
 
-# test coverage
-$ yarn run test:cov
+# (Opcional) Popule com dados de exemplo
+npx prisma db seed
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 5. Inicie a aplicação
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# Desenvolvimento
+npm run start:dev
+
+# Produção
+npm run build
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+A API estará disponível em `http://localhost:3000`
 
-## Resources
+## 📁 Estrutura do Projeto
 
-Check out a few resources that may come in handy when working with NestJS:
+```
+src/
+├── app.module.ts                 # Módulo principal
+├── main.ts                       # Arquivo de entrada
+├── common/                       # Código compartilhado
+│   ├── decorators/              # Decorators customizados
+│   │   ├── roles.decorator.ts
+│   │   └── user.decorator.ts
+│   ├── dto/                     # DTOs globais
+│   │   ├── pagination.dto.ts
+│   │   └── response.dto.ts
+│   ├── enums/                   # Enums globais
+│   │   ├── order-status.enum.ts
+│   │   └── user-role.enum.ts
+│   ├── exceptions/              # Filtros de exceção
+│   │   └── http-exception.filter.ts
+│   ├── guards/                  # Guards globais
+│   │   ├── jwt-auth.guard.ts
+│   │   └── roles.guard.ts
+│   ├── interceptors/            # Interceptors globais
+│   │   ├── logging.interceptor.ts
+│   │   └── transform.interceptor.ts
+│   ├── pipes/                   # Pipes globais
+│   │   └── validation.pipe.ts
+│   └── utils/                   # Funções utilitárias
+│       ├── pagination.util.ts
+│       └── hash.util.ts
+├── config/                      # Configurações
+│   ├── app.config.ts
+│   ├── database.config.ts
+│   ├── jwt.config.ts
+│   └── redis.config.ts
+├── database/                    # Configuração do Prisma
+│   ├── database.module.ts
+│   ├── database.service.ts
+│   └── prisma/
+│       ├── schema.prisma
+│       ├── migrations/
+│       └── seeds/
+└── modules/                     # Módulos da aplicação
+    ├── auth/                    # Autenticação
+    ├── users/                   # Usuários
+    ├── products/                # Produtos
+    ├── categories/              # Categorias
+    ├── orders/                  # Pedidos
+    ├── carts/                   # Carrinho
+    ├── payments/                # Pagamentos
+    ├── reviews/                 # Avaliações
+    ├── coupons/                 # Cupons
+    ├── wishlists/               # Lista de desejos
+    └── newsletter/              # Newsletter
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 🧩 Módulos da Aplicação
 
-## Support
+### 🔐 Auth Module
+- **Responsabilidade**: Autenticação e autorização
+- **Features**: Login, registro, JWT tokens, password reset
+- **Endpoints**: `/auth/login`, `/auth/register`, `/auth/refresh`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 👥 Users Module
+- **Responsabilidade**: Gestão de usuários
+- **Features**: CRUD de usuários, perfis, endereços
+- **Endpoints**: `/users`, `/users/:id`, `/users/:id/addresses`
 
-## Stay in touch
+### 📦 Products Module
+- **Responsabilidade**: Catálogo de produtos
+- **Features**: CRUD de produtos, imagens, categorias, estoque
+- **Endpoints**: `/products`, `/products/:id`, `/products/search`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 🛒 Carts Module
+- **Responsabilidade**: Carrinho de compras
+- **Features**: Adicionar/remover itens, calcular totais
+- **Endpoints**: `/carts`, `/carts/items`, `/carts/clear`
 
-## License
+### 📋 Orders Module
+- **Responsabilidade**: Processamento de pedidos
+- **Features**: Criar pedidos, acompanhar status, histórico
+- **Endpoints**: `/orders`, `/orders/:id`, `/orders/:id/status`
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# ecommerce_backend
+### 💳 Payments Module
+- **Responsabilidade**: Processamento de pagamentos
+- **Features**: Múltiplos gateways, webhooks, reembolsos
+- **Endpoints**: `/payments`, `/payments/:id/refund`
+
+## 🗄️ Banco de Dados
+
+### Esquema Principal
+
+O banco de dados utiliza PostgreSQL com as seguintes entidades principais:
+
+- **users** - Dados dos usuários
+- **products** - Catálogo de produtos
+- **orders** - Pedidos realizados
+- **order_items** - Itens dos pedidos
+- **carts** - Carrinhos de compra
+- **cart_items** - Itens dos carrinhos
+- **payments** - Transações de pagamento
+- **reviews** - Avaliações de produtos
+- **coupons** - Cupons de desconto
+- **addresses** - Endereços dos usuários
+
+### Migrations
+
+```bash
+# Criar nova migration
+npx prisma migrate dev --name nome_da_migration
+
+# Aplicar migrations em produção
+npx prisma migrate deploy
+
+# Resetar banco (apenas desenvolvimento)
+npx prisma migrate reset
+```
+
+### Seeds
+
+```bash
+# Executar seeds
+npx prisma db seed
+```
+
+## 🔐 Autenticação e Autorização
+
+### JWT Authentication
+
+O sistema utiliza JWT (JSON Web Tokens) para autenticação stateless:
+
+```typescript
+// Payload do token
+{
+  sub: userId,
+  email: userEmail,
+  iat: issuedAt,
+  exp: expiresAt
+}
+```
+
+### Roles e Permissões
+
+- **ADMIN** - Acesso total ao sistema
+- **USER** - Acesso limitado às próprias informações
+- **GUEST** - Acesso apenas a endpoints públicos
+
+### Proteção de Rotas
+
+```typescript
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
+@Get('admin-only')
+adminOnlyEndpoint() {
+  // Apenas admins podem acessar
+}
+```
+
+## 🔗 API Endpoints
+
+### Autenticação
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| POST | `/auth/register` | Registrar usuário | ❌ |
+| POST | `/auth/login` | Login | ❌ |
+| POST | `/auth/refresh` | Renovar token | ✅ |
+| POST | `/auth/logout` | Logout | ✅ |
+| POST | `/auth/forgot-password` | Esqueci minha senha | ❌ |
+
+### Usuários
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/users` | Listar usuários | ✅ Admin |
+| GET | `/users/:id` | Buscar usuário | ✅ |
+| PUT | `/users/:id` | Atualizar usuário | ✅ |
+| DELETE | `/users/:id` | Remover usuário | ✅ |
+| GET | `/users/:id/orders` | Pedidos do usuário | ✅ |
+
+### Produtos
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/products` | Listar produtos | ❌ |
+| GET | `/products/:id` | Buscar produto | ❌ |
+| POST | `/products` | Criar produto | ✅ Admin |
+| PUT | `/products/:id` | Atualizar produto | ✅ Admin |
+| DELETE | `/products/:id` | Remover produto | ✅ Admin |
+| GET | `/products/search` | Buscar produtos | ❌ |
+
+### Carrinho
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/carts` | Buscar carrinho | ✅ |
+| POST | `/carts/items` | Adicionar item | ✅ |
+| PUT | `/carts/items/:id` | Atualizar item | ✅ |
+| DELETE | `/carts/items/:id` | Remover item | ✅ |
+| DELETE | `/carts/clear` | Limpar carrinho | ✅ |
+
+### Pedidos
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/orders` | Listar pedidos | ✅ |
+| GET | `/orders/:id` | Buscar pedido | ✅ |
+| POST | `/orders` | Criar pedido | ✅ |
+| PUT | `/orders/:id/status` | Atualizar status | ✅ Admin |
+| POST | `/orders/:id/cancel` | Cancelar pedido | ✅ |
+
+## 🧪 Testes
+
+### Executar Testes
+
+```bash
+# Testes unitários
+npm run test
+
+# Testes de integração
+npm run test:e2e
+
+# Coverage
+npm run test:cov
+
+# Watch mode
+npm run test:watch
+```
+
+### Estrutura de Testes
+
+```
+test/
+├── unit/                    # Testes unitários
+│   ├── users/
+│   ├── products/
+│   └── orders/
+├── integration/             # Testes de integração
+│   ├── auth.e2e-spec.ts
+│   ├── users.e2e-spec.ts
+│   └── products.e2e-spec.ts
+└── fixtures/               # Dados de teste
+    ├── users.fixture.ts
+    └── products.fixture.ts
+```
+
+### Exemplo de Teste
+
+```typescript
+describe('UsersService', () => {
+  let service: UsersService;
+  let repository: UsersRepository;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        {
+          provide: UsersRepository,
+          useValue: mockUsersRepository,
+        },
+      ],
+    }).compile();
+
+    service = module.get<UsersService>(UsersService);
+    repository = module.get<UsersRepository>(UsersRepository);
+  });
+
+  it('should create a user', async () => {
+    const userData = { email: 'test@test.com', username: 'test' };
+    const result = await service.create(userData);
+    
+    expect(result).toBeDefined();
+    expect(result.email).toBe(userData.email);
+  });
+});
+```
+
+## 🚀 Deploy
+
+### Docker
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start:prod"]
+```
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/ecommerce
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+```
+
+### Deploy na Nuvem
+
+#### Heroku
+```bash
+# Login no Heroku
+heroku login
+
+# Criar app
+heroku create seu-app-name
+
+# Configurar variáveis
+heroku config:set DATABASE_URL=sua-database-url
+heroku config:set JWT_SECRET=seu-jwt-secret
+
+# Deploy
+git push heroku main
+```
+
+#### Vercel
+```bash
+# Instalar CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+## 📊 Monitoramento e Logs
+
+### Health Check
+
+```typescript
+@Get('health')
+getHealth() {
+  return {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  };
+}
+```
+
+### Métricas
+
+- **Response time** médio
+- **Throughput** de requests
+- **Error rate** por endpoint
+- **Database** connection pool
+- **Redis** hit/miss ratio
+
+### Logs Estruturados
+
+```typescript
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('UsersService');
+
+logger.log('User created successfully', { userId: user.id });
+logger.error('Failed to create user', { error: error.message });
+```
+
+## 🤝 Contribuição
+
+### Como Contribuir
+
+1. **Fork** o projeto
+2. **Crie** uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. **Commit** suas mudanças (`git commit -am 'Add nova feature'`)
+4. **Push** para a branch (`git push origin feature/nova-feature`)
+5. **Abra** um Pull Request
+
+### Padrões de Código
+
+- Use **TypeScript** para todo o código
+- Siga o **ESLint** e **Prettier**
+- Escreva **testes** para novas features
+- Documente **APIs** com decorators Swagger
+- Use **conventional commits**
+
+### Estrutura de Commits
+
+```
+feat: add user authentication
+fix: resolve cart calculation bug
+docs: update API documentation
+test: add unit tests for products service
+refactor: improve error handling
+```
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📞 Suporte
+
+- **Email**: suporte@ecommerce-api.com
+- **Issues**: [GitHub Issues](https://github.com/seu-usuario/ecommerce-api/issues)
+- **Wiki**: [GitHub Wiki](https://github.com/seu-usuario/ecommerce-api/wiki)
+- **Discussões**: [GitHub Discussions](https://github.com/seu-usuario/ecommerce-api/discussions)
+
+---
+
+⭐ **Se este projeto foi útil, considere dar uma estrela no GitHub!**
+
+Desenvolvido com ❤️ por Kelwinpin
