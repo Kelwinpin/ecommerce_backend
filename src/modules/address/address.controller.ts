@@ -3,6 +3,7 @@ import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import getDecodedToken from 'src/common/utils/getDecodedToke';
 
 @Controller('address')
 @UseGuards(JwtAuthGuard)
@@ -11,18 +12,18 @@ export class AddressController {
 
   @Post()
   create(@Request() req, @Body() createAddressDto: CreateAddressDto) {
-    console.log(req.headers.authorization);
-    return this.addressService.create(createAddressDto);
+    const decoded = getDecodedToken(req.headers.authorization.split(' ')[1]);
+
+    const body = { ...createAddressDto, userId: decoded.id };
+
+    return this.addressService.create(body);
   }
 
   @Get()
-  findAll() {
-    return this.addressService.findAll();
-  }
+  findAll(@Request() req) {
+    const decoded = getDecodedToken(req.headers.authorization.split(' ')[1]);
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.addressService.findOne(+id);
+    return this.addressService.findAll(decoded.id);
   }
 
   @Get('cep/:cep')

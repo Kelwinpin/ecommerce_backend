@@ -8,16 +8,22 @@ import { getCEPInfo } from 'src/common/utils/getCEPInfo';
 export class AddressService {
   constructor(private readonly prisma: DatabaseService) { }
 
-  create(createAddressDto: CreateAddressDto) {
-    return 'This action adds a new address';
+  async create(createAddressDto: CreateAddressDto) {
+    const address = await this.prisma.address.create({
+      data: createAddressDto,
+    });
+
+    return address;
   }
 
-  findAll() {
-    return `This action returns all address`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} address`;
+  findAll(userId: number) {
+    return this.prisma.address.findMany({
+      where: {
+        userId, AND: [
+          { deletedAt: null },
+        ]
+      },
+    });
   }
 
   update(id: number, updateAddressDto: UpdateAddressDto) {
