@@ -5,11 +5,10 @@ import { BaseRepository } from 'src/common/repositories/base.repository';
 
 @Injectable()
 export class UserRepository extends BaseRepository<User> {
+    protected model: any;
+    
     constructor(protected readonly prisma: DatabaseService) {
         super(prisma);
-    }
-
-    protected get model(): any {
-        return this.prisma.user;
+        this.model = this.prisma.user;
     }
 }
