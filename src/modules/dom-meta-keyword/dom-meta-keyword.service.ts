@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService } from '../../database/database.service';
 import { CreateDomMetaKeywordDto } from './dto/create-dom-meta-keyword.dto';
 import { UpdateDomMetaKeywordDto } from './dto/update-dom-meta-keyword.dto';
 import type { DomMetaKeyword } from '@prisma/client';
