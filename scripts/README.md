@@ -11,6 +11,7 @@ Script automatizado para gerar módulos completos do NestJS baseados nos models 
 - ✅ **Validações automáticas** com class-validator
 - ✅ **Documentação Swagger** automática
 - ✅ **Tipagem correta** para Decimal e outros tipos Prisma
+- ✅ **Suporte a chaves compostas** (@@id([campo1, campo2]))
 
 ## 🛠️ Como Usar
 
@@ -73,6 +74,18 @@ Para modelos sem timestamps ou apenas com alguns campos:
 - **Service** com lógica simples
 - **Controller** com endpoints RESTful padrão
 - **Funcionalidades**: CRUD básico sem funcionalidades avançadas
+
+### 🔗 Chaves Compostas (Modelos com @@id([campo1, campo2]))
+
+Para modelos com chave primária composta:
+
+- **Endpoints especiais**: `GET/PATCH/DELETE /:campo1/:campo2`
+- **Métodos específicos**: `findByCompositeId()`, `update(campo1, campo2, data)`, etc.
+- **Where clause correto**: `{ campo1_campo2: { campo1, campo2 } }`
+
+**Exemplo**: Model `Category` com `@@id([categoryId, productId])` gera:
+- `GET /category/:categoryId/:productId`
+- `DELETE /category/:categoryId/:productId`
 
 ## 📝 Exemplo de Uso
 

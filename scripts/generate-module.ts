@@ -20,6 +20,8 @@ interface PrismaModel {
   fields: PrismaField[];
   hasTimestamps: boolean;
   hasSoftDelete: boolean;
+  hasCompositeId: boolean;
+  compositeIdFields: string[];
 }
 
 class ModuleGenerator {
@@ -41,11 +43,20 @@ class ModuleGenerator {
       const hasTimestamps = fields.some(f => ['createdAt', 'updatedAt'].includes(f.name));
       const hasSoftDelete = fields.some(f => f.name === 'deletedAt');
       
+      // Check for composite ID
+      const compositeIdMatch = modelBody.match(/@@id\(\[([^\]]+)\]/);
+      const hasCompositeId = !!compositeIdMatch;
+      const compositeIdFields = hasCompositeId 
+        ? compositeIdMatch[1].split(',').map(f => f.trim()) 
+        : [];
+      
       models.push({
         name: modelName,
         fields,
         hasTimestamps,
-        hasSoftDelete
+        hasSoftDelete,
+        hasCompositeId,
+        compositeIdFields
       });
     }
 
@@ -211,18 +222,52 @@ class ModuleGenerator {
       content += `  async findAll(): Promise<${model.name}[]> {\n`;
       content += `    return this.prisma.${modelName}.findMany();\n`;
       content += `  }\n\n`;
-      content += `  async findById(id: number): Promise<${model.name} | null> {\n`;
-      content += `    return this.prisma.${modelName}.findUnique({ where: { id } });\n`;
-      content += `  }\n\n`;
-      content += `  async create(data: any): Promise<${model.name}> {\n`;
-      content += `    return this.prisma.${modelName}.create({ data });\n`;
-      content += `  }\n\n`;
-      content += `  async update(id: number, data: any): Promise<${model.name}> {\n`;
-      content += `    return this.prisma.${modelName}.update({ where: { id }, data });\n`;
-      content += `  }\n\n`;
-      content += `  async delete(id: number): Promise<${model.name}> {\n`;
-      content += `    return this.prisma.${modelName}.delete({ where: { id } });\n`;
-      content += `  }\n`;
+      if (model.hasCompositeId) {
+        const whereType = `{ ${model.compositeIdFields.map(f => `${f}: number`).join(', ')} }`;
+        const whereParam = `{ ${model.compositeIdFields.map(f => `${f}_${model.compositeIdFields.filter(x => x !== f).join('_')}`).join('_')}: { ${model.compositeIdFields.map(f => `${f}`).join(', ')} } }`;
+        
+        content += `  async findByCompositeId(${model.compositeIdFields.map(f => `${f}: number`).join(', ')}): Promise<${model.name} | null> {\n`;
+        content += `    return this.prisma.${modelName}.findUnique({ \n`;
+        content += `      where: { \n`;
+        content += `        ${model.compositeIdFields.join('_')}: { ${model.compositeIdFields.map(f => `${f}`).join(', ')} }\n`;
+        content += `      }\n`;
+        content += `    });\n`;
+        content += `  }\n\n`;
+        
+        content += `  async create(data: any): Promise<${model.name}> {\n`;
+        content += `    return this.prisma.${modelName}.create({ data });\n`;
+        content += `  }\n\n`;
+        
+        content += `  async update(${model.compositeIdFields.map(f => `${f}: number`).join(', ')}, data: any): Promise<${model.name}> {\n`;
+        content += `    return this.prisma.${modelName}.update({ \n`;
+        content += `      where: { \n`;
+        content += `        ${model.compositeIdFields.join('_')}: { ${model.compositeIdFields.map(f => `${f}`).join(', ')} }\n`;
+        content += `      }, \n`;
+        content += `      data \n`;
+        content += `    });\n`;
+        content += `  }\n\n`;
+        
+        content += `  async delete(${model.compositeIdFields.map(f => `${f}: number`).join(', ')}): Promise<${model.name}> {\n`;
+        content += `    return this.prisma.${modelName}.delete({ \n`;
+        content += `      where: { \n`;
+        content += `        ${model.compositeIdFields.join('_')}: { ${model.compositeIdFields.map(f => `${f}`).join(', ')} }\n`;
+        content += `      }\n`;
+        content += `    });\n`;
+        content += `  }\n`;
+      } else {
+        content += `  async findById(id: number): Promise<${model.name} | null> {\n`;
+        content += `    return this.prisma.${modelName}.findUnique({ where: { id } });\n`;
+        content += `  }\n\n`;
+        content += `  async create(data: any): Promise<${model.name}> {\n`;
+        content += `    return this.prisma.${modelName}.create({ data });\n`;
+        content += `  }\n\n`;
+        content += `  async update(id: number, data: any): Promise<${model.name}> {\n`;
+        content += `    return this.prisma.${modelName}.update({ where: { id }, data });\n`;
+        content += `  }\n\n`;
+        content += `  async delete(id: number): Promise<${model.name}> {\n`;
+        content += `    return this.prisma.${modelName}.delete({ where: { id } });\n`;
+        content += `  }\n`;
+      }
     }
     
     content += `}\n`;
@@ -271,18 +316,34 @@ class ModuleGenerator {
       content += `  async findAll(): Promise<${model.name}[]> {\n`;
       content += `    return this.${repositoryVar}.findAll();\n`;
       content += `  }\n\n`;
-      content += `  async findById(id: number): Promise<${model.name} | null> {\n`;
-      content += `    return this.${repositoryVar}.findById(id);\n`;
-      content += `  }\n\n`;
-      content += `  async create(createDto: Create${model.name}Dto): Promise<${model.name}> {\n`;
-      content += `    return this.${repositoryVar}.create(createDto);\n`;
-      content += `  }\n\n`;
-      content += `  async update(id: number, updateDto: Update${model.name}Dto): Promise<${model.name}> {\n`;
-      content += `    return this.${repositoryVar}.update(id, updateDto);\n`;
-      content += `  }\n\n`;
-      content += `  async delete(id: number): Promise<${model.name}> {\n`;
-      content += `    return this.${repositoryVar}.delete(id);\n`;
-      content += `  }\n`;
+      
+      if (model.hasCompositeId) {
+        content += `  async findByCompositeId(${model.compositeIdFields.map(f => `${f}: number`).join(', ')}): Promise<${model.name} | null> {\n`;
+        content += `    return this.${repositoryVar}.findByCompositeId(${model.compositeIdFields.join(', ')});\n`;
+        content += `  }\n\n`;
+        content += `  async create(createDto: Create${model.name}Dto): Promise<${model.name}> {\n`;
+        content += `    return this.${repositoryVar}.create(createDto);\n`;
+        content += `  }\n\n`;
+        content += `  async update(${model.compositeIdFields.map(f => `${f}: number`).join(', ')}, updateDto: Update${model.name}Dto): Promise<${model.name}> {\n`;
+        content += `    return this.${repositoryVar}.update(${model.compositeIdFields.join(', ')}, updateDto);\n`;
+        content += `  }\n\n`;
+        content += `  async delete(${model.compositeIdFields.map(f => `${f}: number`).join(', ')}): Promise<${model.name}> {\n`;
+        content += `    return this.${repositoryVar}.delete(${model.compositeIdFields.join(', ')});\n`;
+        content += `  }\n`;
+      } else {
+        content += `  async findById(id: number): Promise<${model.name} | null> {\n`;
+        content += `    return this.${repositoryVar}.findById(id);\n`;
+        content += `  }\n\n`;
+        content += `  async create(createDto: Create${model.name}Dto): Promise<${model.name}> {\n`;
+        content += `    return this.${repositoryVar}.create(createDto);\n`;
+        content += `  }\n\n`;
+        content += `  async update(id: number, updateDto: Update${model.name}Dto): Promise<${model.name}> {\n`;
+        content += `    return this.${repositoryVar}.update(id, updateDto);\n`;
+        content += `  }\n\n`;
+        content += `  async delete(id: number): Promise<${model.name}> {\n`;
+        content += `    return this.${repositoryVar}.delete(id);\n`;
+        content += `  }\n`;
+      }
     }
     
     content += `}\n`;
@@ -340,26 +401,53 @@ class ModuleGenerator {
       content += `    return this.${serviceVar}.findAll();\n`;
       content += `  }\n\n`;
       
-      content += `  @Get(':id')\n`;
-      content += `  @ApiOperation({ summary: 'Get ${model.name.toLowerCase()} by id' })\n`;
-      content += `  @ApiResponse({ status: 200, description: 'Return the ${model.name.toLowerCase()}.' })\n`;
-      content += `  findOne(@Param('id', ParseIntPipe) id: number): Promise<${model.name} | null> {\n`;
-      content += `    return this.${serviceVar}.findById(id);\n`;
-      content += `  }\n\n`;
-      
-      content += `  @Patch(':id')\n`;
-      content += `  @ApiOperation({ summary: 'Update ${model.name.toLowerCase()}' })\n`;
-      content += `  @ApiResponse({ status: 200, description: 'The ${model.name.toLowerCase()} has been successfully updated.' })\n`;
-      content += `  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: Update${model.name}Dto): Promise<${model.name}> {\n`;
-      content += `    return this.${serviceVar}.update(id, updateDto);\n`;
-      content += `  }\n\n`;
-      
-      content += `  @Delete(':id')\n`;
-      content += `  @ApiOperation({ summary: 'Delete ${model.name.toLowerCase()}' })\n`;
-      content += `  @ApiResponse({ status: 200, description: 'The ${model.name.toLowerCase()} has been successfully deleted.' })\n`;
-      content += `  remove(@Param('id', ParseIntPipe) id: number): Promise<${model.name}> {\n`;
-      content += `    return this.${serviceVar}.delete(id);\n`;
-      content += `  }\n`;
+      if (model.hasCompositeId) {
+        const paramDecorators = model.compositeIdFields.map(f => `@Param('${f}', ParseIntPipe) ${f}: number`).join(', ');
+        const paramPath = model.compositeIdFields.map(f => `:${f}`).join('/');
+        const paramCall = model.compositeIdFields.join(', ');
+        
+        content += `  @Get('${paramPath}')\n`;
+        content += `  @ApiOperation({ summary: 'Get ${model.name.toLowerCase()} by composite id' })\n`;
+        content += `  @ApiResponse({ status: 200, description: 'Return the ${model.name.toLowerCase()}.' })\n`;
+        content += `  findOne(${paramDecorators}): Promise<${model.name} | null> {\n`;
+        content += `    return this.${serviceVar}.findByCompositeId(${paramCall});\n`;
+        content += `  }\n\n`;
+        
+        content += `  @Patch('${paramPath}')\n`;
+        content += `  @ApiOperation({ summary: 'Update ${model.name.toLowerCase()}' })\n`;
+        content += `  @ApiResponse({ status: 200, description: 'The ${model.name.toLowerCase()} has been successfully updated.' })\n`;
+        content += `  update(${paramDecorators}, @Body() updateDto: Update${model.name}Dto): Promise<${model.name}> {\n`;
+        content += `    return this.${serviceVar}.update(${paramCall}, updateDto);\n`;
+        content += `  }\n\n`;
+        
+        content += `  @Delete('${paramPath}')\n`;
+        content += `  @ApiOperation({ summary: 'Delete ${model.name.toLowerCase()}' })\n`;
+        content += `  @ApiResponse({ status: 200, description: 'The ${model.name.toLowerCase()} has been successfully deleted.' })\n`;
+        content += `  remove(${paramDecorators}): Promise<${model.name}> {\n`;
+        content += `    return this.${serviceVar}.delete(${paramCall});\n`;
+        content += `  }\n`;
+      } else {
+        content += `  @Get(':id')\n`;
+        content += `  @ApiOperation({ summary: 'Get ${model.name.toLowerCase()} by id' })\n`;
+        content += `  @ApiResponse({ status: 200, description: 'Return the ${model.name.toLowerCase()}.' })\n`;
+        content += `  findOne(@Param('id', ParseIntPipe) id: number): Promise<${model.name} | null> {\n`;
+        content += `    return this.${serviceVar}.findById(id);\n`;
+        content += `  }\n\n`;
+        
+        content += `  @Patch(':id')\n`;
+        content += `  @ApiOperation({ summary: 'Update ${model.name.toLowerCase()}' })\n`;
+        content += `  @ApiResponse({ status: 200, description: 'The ${model.name.toLowerCase()} has been successfully updated.' })\n`;
+        content += `  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: Update${model.name}Dto): Promise<${model.name}> {\n`;
+        content += `    return this.${serviceVar}.update(id, updateDto);\n`;
+        content += `  }\n\n`;
+        
+        content += `  @Delete(':id')\n`;
+        content += `  @ApiOperation({ summary: 'Delete ${model.name.toLowerCase()}' })\n`;
+        content += `  @ApiResponse({ status: 200, description: 'The ${model.name.toLowerCase()} has been successfully deleted.' })\n`;
+        content += `  remove(@Param('id', ParseIntPipe) id: number): Promise<${model.name}> {\n`;
+        content += `    return this.${serviceVar}.delete(id);\n`;
+        content += `  }\n`;
+      }
     }
     
     content += `}\n`;
