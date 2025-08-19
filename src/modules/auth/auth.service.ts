@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { DatabaseService } from 'src/database/database.service';
 import { LoginDto, RegisterDto } from './auth.dto';
 import { Users } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -53,6 +54,41 @@ export class AuthService {
             throw new UnauthorizedException('Email ou senha inválidos');
 
         return this.signToken(user);
+    }
+
+    async forgotPassword(dto: Omit<LoginDto, 'password'>) {
+        const user = await this.prisma.users.findUnique({
+            where: { email: dto.email },
+        });
+        if (!user) throw new UnauthorizedException('Email inválido');
+
+        const hasCodeSended = await this.prisma.emailValidation.findFirst({
+            where: { email: user.email },
+        });
+
+        if (hasCodeSended) {
+            await this.prisma.emailValidation.delete({
+                where: { email: user.email, code: hasCodeSended.code, userId: user.id },
+            });
+        }
+
+        await this.prisma.emailValidation.create({
+            data: {
+                email: user.email,
+                code: Math.floor(Math.random() * 10000),
+                userId: user.id,
+            },
+        });
+
+        return { message: 'Email enviado com sucesso' };
+    }
+
+    async validateEmail(code: number, email: string) {
+        const emailValidation = await this.prisma.emailValidation.findFirst({
+            where: { code, email },
+        });
+
+        console.log(emailValidation);
     }
 
     async signToken(user: Users) {
